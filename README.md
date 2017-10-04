@@ -2,7 +2,12 @@
 
 _Let the bots deploy and the humans approve._
 
-Oga is a Kubernetes intiializer that requests approval from slack(this is can be extended with different requesters in the future see [fake_requester](initializer/fake_requester.go) as an example).
+Oga is a [Kubernetes
+intiializer](https://kubernetes.io/docs/admin/extensible-admission-controllers/#configure-initializers-on-the-fly)
+that blocks a deployment from initializing and requests approval from
+slack(this is can be extended with different requesters in the future see
+[fake_requester](initializer/fake_requester.go) as an example) before allowing
+the deployment to continue.
 
 ## Usage
 
@@ -50,6 +55,23 @@ metadata:
 ```
 
 **Note this will remove all initializers including `oga`**
+
+On successfull approval oga will update the deployment metadata as below:
+
+```yaml
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: "1"
+      initializer.kubernetes.io/oga: |
+        approved_by: |
+          Username: bjhaid, Fullname: Ayodele, Email: bjhaid@oga.com
+        slack:
+          approvers:
+          - '@bjhaid'
+          channel: '#testoga'
+```
+
+Including the details of the person who responded to the approval request on the annotation.
 
 ```bash
 Usage of ./oga:

@@ -100,11 +100,9 @@ func NewSlackRequester() *SlackRequester {
 	}
 
 	userID, err := req.getUserID(botName)
-
 	if err != nil {
 		glog.Fatalf("%s\n", err)
 	}
-
 	req.userID = userID
 
 	return req
@@ -130,25 +128,27 @@ func (req *SlackRequester) Run() {
 			match := re.FindStringSubmatch(ev.Text)
 			if len(match) == 2 {
 				glog.V(3).Infof("Message '%s' matched an approval request", ev.Text)
-				var appr string
-				var approver string
+				var user string
 				for _, approver := range req.approvers[match[1]] {
-					appr, _ = req.getUserID(approver)
-					if ev.User == appr {
+					a, _ := req.getUserID(approver)
+					if ev.User == a {
 						approverMatches = true
+						user = approver
 						break
 					}
 				}
 				if approverMatches {
 					approval := req.requestStore[match[1]]
-					if u, ok := req.userCache.Get(match[1]); ok {
+					user = strings.Replace(user, "@", "", 1)
+					glog.V(5).Infof("Attempting to retrieve %s from userCache", user)
+					if u, ok := req.userCache.Get(user); ok {
 						user := u.(slack.User)
 						approval.Approver = fmt.Sprintf(
 							"Username: %s, Fullname: %s, Email: %s\n",
 							user.Profile.DisplayName, user.Profile.RealName,
 							user.Profile.Email)
 					} else {
-						approval.Approver = approver
+						approval.Approver = user
 					}
 					glog.V(3).Info("%s approved %s", approval.Approver, match[1])
 					req.initializer.ApproveDeployment(approval)
@@ -180,14 +180,6 @@ func (req *SlackRequester) Run() {
 	}
 }
 
-//
-// annotation should be of the form:
-// ```
-// approvers:
-//   - "@foo"
-// 	 - "@bar"
-// channel: "#baz"
-// ```
 func (req *SlackRequester) RequestApproval(oga initializer.Interface,
 	app *initializer.Approval, annon string) {
 	req.requestStore[app.DeploymentName] = app
@@ -279,7 +271,7 @@ func (req *SlackRequester) retrieveApproverIds(
 }
 
 func (req *SlackRequester) getUserID(user string) (string, error) {
-	channels, err := req.api.GetUsers()
+	users, err := req.api.GetUsers()
 	if err != nil {
 		glog.Errorf("Failed retrieving user ID from the slack API due to: %s",
 			err)
@@ -292,8 +284,9 @@ func (req *SlackRequester) getUserID(user string) (string, error) {
 		u := us.(slack.User)
 		return u.ID, nil
 	}
-	for _, u := range channels {
+	for _, u := range users {
 		if user == u.Profile.DisplayName || user == u.Profile.RealName {
+			glog.V(5).Infof("Adding %s to user cache", user)
 			req.userCache.Add(user, u)
 			return u.ID, nil
 		}

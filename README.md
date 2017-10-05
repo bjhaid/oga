@@ -3,9 +3,9 @@
 _Let the bots deploy and the humans approve._
 
 Oga is a [Kubernetes
-intiializer](https://kubernetes.io/docs/admin/extensible-admission-controllers/#configure-initializers-on-the-fly)
+intializer](https://kubernetes.io/docs/admin/extensible-admission-controllers/#configure-initializers-on-the-fly)
 that blocks a deployment from initializing and requests approval from
-slack(this is can be extended with different requesters in the future see
+slack(this can be extended with different requesters in the future see
 [fake_requester](initializer/fake_requester.go) as an example) before allowing
 the deployment to continue.
 
@@ -24,7 +24,7 @@ $> ./oga -bot-name oga -slack-token "<SLACK TOKEN>"`
 
 _this will be updated with a k8s deployment in the future_
 
-On deployments that require approval define the below annotation on them:
+On deployments that require approval, define the below annotation on them:
 
 ```yaml
 metadata:

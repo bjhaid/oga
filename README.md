@@ -11,7 +11,7 @@ the deployment to continue.
 
 ## Usage
 
-- Create the initializer resource in k8s e.g:
+Create the initializer resource in k8s e.g:
 ```bash
 $> kubectl apply -f examples/initializer.yaml
 ```

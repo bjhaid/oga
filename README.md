@@ -38,25 +38,9 @@ metadata:
 
 Apply the deployment and you should get a message like below in slack if it's
 configured correctly:
-
-If you need to override `oga`'s approval request for any reason you can declare
-an empty initializer on your deployment configuration as below:
 ![approval image](examples/approval_screenshot.png)
 
-```yaml
-metadata:
-  initializers:
-  annotations:
-    "initializer.kubernetes.io/oga": |
-      slack:
-        channel: "#testoga"
-        approvers:
-          - "@bjhaid"
-```
-
-**Note this will remove all initializers including `oga`**
-
-On successfull approval oga will update the deployment metadata as below:
+On successful approval oga will update the deployment metadata as below:
 
 ```yaml
   metadata:
@@ -72,6 +56,22 @@ On successfull approval oga will update the deployment metadata as below:
 ```
 
 Including the details of the person who responded to the approval request on the annotation.
+
+If you need to override `oga`'s approval request for any reason you can declare
+an empty initializer on your deployment configuration as below:
+
+```yaml
+metadata:
+  initializers:
+  annotations:
+    "initializer.kubernetes.io/oga": |
+      slack:
+        channel: "#testoga"
+        approvers:
+          - "@bjhaid"
+```
+
+**Note this will remove all initializers including `oga`**
 
 ```bash
 Usage of ./oga:
